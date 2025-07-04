@@ -13,9 +13,9 @@ public interface DownloadTrackingRepository {
 
   List<UserDownload> findAll();
 
-  List<UserDownload> findByUser(UserEntity user);
+  List<UserDownload> findByUserId(Long userId);
 
-  List<UserDownload> findByLibrary(LibraryEntity library);
+  List<UserDownload> findByLibraryId(Long libraryId);
 
   UserDownload findById(String downloadUuid);
 

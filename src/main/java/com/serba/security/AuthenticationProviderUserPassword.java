@@ -30,8 +30,7 @@ public class AuthenticationProviderUserPassword<B> implements HttpRequestReactiv
     public Publisher<AuthenticationResponse> authenticate(
             @Nullable HttpRequest<B> httpRequest,
             @NonNull AuthenticationRequest<String, String> authenticationRequest) {
-        log.info("Got authentication request: {}:{}", authenticationRequest.getIdentity(),
-                authenticationRequest.getSecret());
+        log.info("Got authentication request: {}", authenticationRequest.getIdentity());
         return Flux.create(emitter -> {
             UserEntity user = userService.findByUsernameAndPassword(
                     authenticationRequest.getIdentity(), authenticationRequest.getSecret());

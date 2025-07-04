@@ -62,16 +62,16 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
   }
 
   @Override
-  public List<UserDownload> findByUser(UserEntity user) {
+  public List<UserDownload> findByUserId(Long userId) {
     return downloads.values().stream()
-        .filter(d -> d.getUser().equals(user))
+        .filter(d -> d.getUser().getId().equals(userId))
         .toList();
   }
 
   @Override
-  public List<UserDownload> findByLibrary(LibraryEntity library) {
+  public List<UserDownload> findByLibraryId(Long libraryId) {
     return downloads.values().stream()
-        .filter(d -> d.getLibrary().equals(library))
+        .filter(d -> d.getLibrary().getId().equals(libraryId))
         .toList();
   }
 

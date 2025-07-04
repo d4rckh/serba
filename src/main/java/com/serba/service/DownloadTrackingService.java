@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 public class DownloadTrackingService {
   private final DownloadTrackingRepository downloadTrackingRepository;
-
+  
   public String startTracking(UserEntity user, LibraryEntity library, String path, long totalBytes) {
     log.info("User {} is starting download of {} from library {} with total bytes: {}",
         user.getUsername(), path, library.getName(), totalBytes);
@@ -49,5 +49,13 @@ public class DownloadTrackingService {
 
   public UserDownload findById(String id) {
     return downloadTrackingRepository.findById(id);
+  }
+
+  public List<UserDownload> findByUserId(Long id) {
+    return downloadTrackingRepository.findByUserId(id);
+  }
+
+  public List<UserDownload> findByLibraryId(Long id) {
+    return downloadTrackingRepository.findByLibraryId(id);
   }
 }
