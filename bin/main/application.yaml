@@ -16,8 +16,17 @@ micronaut:
   application:
     name: serba
   security:
+    enabled: true
     authentication: session
-  test:
+    session:
+      login-success-target-url: /users/me
+    intercept-url-map:
+      - pattern: /login
+        access:
+          - isAnonymous()   # allow anonymous access to /login
+      - pattern: /**
+        access:
+          - isAuthenticated()  # protect all other routes  test:
     resources:
       enabled: false
 
