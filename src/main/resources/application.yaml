@@ -15,11 +15,27 @@ datasources:
 micronaut:
   application:
     name: serba
+  server:
+    port: 8080
+    cors:
+      enabled: true
+      allowed-origins:
+        - "http://localhost:5173"
+      allowed-methods:
+        - GET
+        - POST
+        - OPTIONS
+        - PUT
+        - DELETE
+      allowed-headers:
+        - Authorization
+        - Content-Type
+      allow-credentials: true
   security:
     enabled: true
     authentication: session
-    session:
-      login-success-target-url: /users/me
+    redirect:
+      enabled: false
     intercept-url-map:
       - pattern: /login
         access:

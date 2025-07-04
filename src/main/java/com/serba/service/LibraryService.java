@@ -3,10 +3,12 @@ package com.serba.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import com.serba.domain.files.SystemFileFolder;
+import com.serba.domain.files.SystemFileFolderType;
 import com.serba.entity.LibraryEntity;
 import com.serba.entity.UserEntity;
 import com.serba.repository.LibraryRepository;
@@ -47,10 +49,17 @@ public class LibraryService {
     return this.libraryRepository.findAll();
   }
 
-  public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path) throws IOException {
-    return this.systemFilesService.listFolderContents(
+public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path) throws IOException {
+    List<SystemFileFolder> contents = this.systemFilesService.listFolderContents(
         Paths.get(library.getSystemLocation(), path).toString());
-  }
+
+    contents.sort(Comparator
+        .comparing((SystemFileFolder f) -> f.getType() != SystemFileFolderType.FOLDER)
+        .thenComparing(SystemFileFolder::getName, String.CASE_INSENSITIVE_ORDER));
+
+    return contents;
+}
+
 
   public InputStream downloadLibraryFile(LibraryEntity library, String path, UserEntity user) throws IOException {
     String fullPath = Paths.get(library.getSystemLocation(), path).toString();
@@ -62,5 +71,9 @@ public class LibraryService {
         (bytesRead, total) -> this.downloadTrackingService.updateProgress(downloadUuid, bytesRead),
         () -> this.downloadTrackingService.completeDownload(downloadUuid),
         () -> this.downloadTrackingService.failDownload(downloadUuid));
+  }
+
+  public void deleteLibrary(LibraryEntity libraryEntity) {
+    this.libraryRepository.delete(libraryEntity);
   }
 }

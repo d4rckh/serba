@@ -1,5 +1,7 @@
 package com.serba.controller;
 
+import java.util.List;
+
 import com.serba.domain.CreateUserRequest;
 import com.serba.entity.UserEntity;
 import com.serba.service.UserService;
@@ -29,5 +31,11 @@ public class UserController {
   public UserEntity getCurrentUser(Authentication authentication) {
     String username = authentication.getName();
     return userService.findByUsername(username);
+  }
+
+  @Secured(SecurityRule.IS_AUTHENTICATED)
+  @Get
+  public List<UserEntity> findAll() {
+    return userService.findAll();
   }
 }

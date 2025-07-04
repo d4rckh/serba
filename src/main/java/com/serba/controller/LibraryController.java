@@ -11,6 +11,7 @@ import com.serba.entity.UserEntity;
 import com.serba.service.LibraryService;
 import com.serba.service.UserService;
 
+import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
@@ -55,6 +56,12 @@ public class LibraryController {
   LibraryEntity findById(@PathVariable Long id) {
     return libraryService.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Library not found with id: " + id));
+  }
+
+  @Delete
+  @Secured(SecurityRule.IS_AUTHENTICATED)
+  void deleteLibrary(@Body LibraryEntity libraryEntity) {
+    libraryService.deleteLibrary(libraryEntity);
   }
 
   @Get("{id}/files")

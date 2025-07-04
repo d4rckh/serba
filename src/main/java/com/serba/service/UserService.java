@@ -1,5 +1,7 @@
 package com.serba.service;
 
+import java.util.List;
+
 import org.mindrot.jbcrypt.BCrypt;
 
 import com.serba.domain.CreateUserRequest;
@@ -47,4 +49,7 @@ public class UserService {
         .orElseThrow(() -> new RuntimeException("User not found"));
   }
 
+  public List<UserEntity> findAll() {
+    return userRepository.findAll();
+  }
 }
