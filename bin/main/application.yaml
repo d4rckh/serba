@@ -1,0 +1,29 @@
+flyway:
+  datasources:
+    default:
+      enabled: true
+
+datasources:
+  default:
+    db-type: postgres
+    dialect: POSTGRES
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:1111/serba
+    username: serba
+    password: serba
+
+micronaut:
+  application:
+    name: serba
+  security:
+    authentication: session
+  test:
+    resources:
+      enabled: false
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: none

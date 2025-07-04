@@ -1,0 +1,38 @@
+flyway:
+  datasources:
+    default:
+      enabled: true
+
+datasources:
+  default:
+    db-type: postgres
+    dialect: POSTGRES
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:1111/serba
+    username: serba
+    password: serba
+
+micronaut:
+  application:
+    name: serba
+  security:
+    enabled: true
+    authentication: session
+    session:
+      login-success-target-url: /users/me
+    intercept-url-map:
+      - pattern: /login
+        access:
+          - isAnonymous()   # allow anonymous access to /login
+      - pattern: /**
+        access:
+          - isAuthenticated()  # protect all other routes  test:
+    resources:
+      enabled: false
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: none
