@@ -2,6 +2,7 @@ package com.serba.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
@@ -24,6 +25,28 @@ public class LibraryService {
   private final LibraryRepository libraryRepository;
   private final SystemFilesService systemFilesService;
   private final DownloadTrackingService downloadTrackingService;
+
+  private Path resolveSafePath(String baseDir, String relativePath) {
+    Path base = Paths.get(baseDir).toAbsolutePath().normalize();
+
+    // Handle empty or "/" path as the base directory itself
+    if (relativePath == null || relativePath.isEmpty() || relativePath.equals("/")) {
+      return base;
+    }
+
+    // Remove leading slashes to avoid resolving to root
+    while (relativePath.startsWith("/") || relativePath.startsWith("\\")) {
+      relativePath = relativePath.substring(1);
+    }
+
+    Path resolved = base.resolve(relativePath).normalize();
+
+    if (!resolved.startsWith(base)) {
+      throw new SecurityException("Path traversal attempt detected: " + relativePath);
+    }
+
+    return resolved;
+  }
 
   public LibraryEntity createLibrary(LibraryEntity libraryEntity) {
     return this.libraryRepository.save(libraryEntity);
@@ -54,8 +77,9 @@ public class LibraryService {
   }
 
   public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path) throws IOException {
-    List<SystemFileFolder> contents = this.systemFilesService.listFolderContents(
-        Paths.get(library.getSystemLocation(), path).toString());
+    Path safePath = resolveSafePath(library.getSystemLocation(), path);
+
+    List<SystemFileFolder> contents = this.systemFilesService.listFolderContents(safePath.toString());
 
     contents.sort(Comparator
         .comparing((SystemFileFolder f) -> f.getType() != SystemFileFolderType.FOLDER)
@@ -65,12 +89,13 @@ public class LibraryService {
   }
 
   public InputStream downloadLibraryFile(LibraryEntity library, String path, UserEntity user) throws IOException {
-    String fullPath = Paths.get(library.getSystemLocation(), path).toString();
-    long totalBytes = java.nio.file.Files.size(Paths.get(fullPath));
+    Path safePath = resolveSafePath(library.getSystemLocation(), path);
+    long totalBytes = java.nio.file.Files.size(safePath);
+
     String downloadUuid = this.downloadTrackingService.startTracking(user, library, path, totalBytes);
 
     return systemFilesService.downloadFileStream(
-        fullPath,
+        safePath.toString(),
         (read, total) -> this.downloadTrackingService.updateProgress(downloadUuid, read),
         () -> this.downloadTrackingService.completeDownload(downloadUuid),
         () -> this.downloadTrackingService.failDownload(downloadUuid));
