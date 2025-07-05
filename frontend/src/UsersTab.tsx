@@ -7,18 +7,61 @@ import {
   useDeleteUser,
   useUpdatePassword,
   useUserDownloadTracking,
+  useUserPermissions,
+  useUpdateUserLibraryAccessMutation,
 } from "@/lib/queries";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { components } from "./lib/v1";
-import { Card, CardContent } from "./components/ui/card";
+import { Card, CardContent, CardFooter } from "./components/ui/card";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./components/ui/dialog";
+import { Checkbox } from "./components/ui/checkbox";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 interface Props {
   user: components["schemas"]["UserEntity"];
   onDelete: () => void;
+}
+
+export function PermissionEditor({ perm }: { perm: components["schemas"]["UserLibraryAccessEntity"] }) {
+  const editMutation = useUpdateUserLibraryAccessMutation();
+
+  return <>
+    <p className="flex items-center"> <Checkbox
+      className="mr-2"
+      checked={perm.viewLibrary}
+      onCheckedChange={(checked) => editMutation.mutate({
+        body: { ...perm, viewLibrary: checked === true },
+      })}
+    /> Can view '{perm.library?.name}'</p>
+
+  </>
+}
+
+export function UserDialog({ user }: { user: components["schemas"]["UserEntity"] }) {
+  const permissions = useUserPermissions(user.id as number);
+
+  return <>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          View Permissions
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Permissions for {user.username}</DialogTitle>
+          <DialogDescription>Note: you can't change the permissions for superusers.</DialogDescription>
+        </DialogHeader>
+        {
+          permissions.data?.map((perm) => <PermissionEditor key={perm.id} perm={perm} />)
+        }
+      </DialogContent>
+    </Dialog>
+  </>
 }
 
 export function UserCard({ user, onDelete }: Props) {
@@ -42,9 +85,6 @@ export function UserCard({ user, onDelete }: Props) {
               onClick={() => setExpanded(prev => !prev)}
             >
               {expanded ? <ChevronUp /> : <ChevronDown />}
-            </Button>
-            <Button variant="destructive" onClick={onDelete}>
-              Delete
             </Button>
           </div>
         </div>
@@ -77,6 +117,12 @@ export function UserCard({ user, onDelete }: Props) {
           </div>
         )}
       </CardContent>
+      <CardFooter className="flex gap-2">
+        <Button variant="destructive" onClick={onDelete}>
+          Delete
+        </Button>
+        <UserDialog user={user} />
+      </CardFooter>
     </Card>
   );
 }

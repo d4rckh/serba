@@ -1,0 +1,11 @@
+services:
+  serba-postgres-dev:
+    image: postgres:15
+    container_name: serba-postgres-dev
+    environment:
+      POSTGRES_DB: serba
+      POSTGRES_USER: serba
+      POSTGRES_PASSWORD: serba
+    ports:
+      - "1111:5432"
+    restart: unless-stopped

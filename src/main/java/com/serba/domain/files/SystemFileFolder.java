@@ -1,7 +1,5 @@
 package com.serba.domain.files;
 
-import java.util.List;
-
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Data;
 

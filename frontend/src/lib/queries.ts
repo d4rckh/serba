@@ -132,6 +132,11 @@ export function useDeleteLibrary() {
   });
 }
 
+/**
+ *
+ * USERS
+ */
+
 export function useUsers() {
   const user = useUserQuery();
   return $api.useQuery("get", "/users", undefined, {
@@ -165,4 +170,36 @@ export function useDeleteUser() {
       queryClient.refetchQueries($api.queryOptions("get", "/users"));
     },
   });
+}
+
+//
+// PERMISSION MANAGEMENT
+//
+
+export function useUserPermissions(userId: number) {
+  const user = useUserQuery();
+  return $api.useQuery(
+    'get',
+    '/user-library-access/user/{userId}',
+    { params: { path: { userId } } },
+    { enabled: !!userId && user.isSuccess }
+  );
+}
+
+export function useUpdateUserLibraryAccessMutation() {
+  const user = useUserQuery();
+  const queryClient = useQueryClient();
+
+  return $api.useMutation('put', '/user-library-access',
+    {
+      enabled: user.isSuccess,
+      onSettled: (data) => {
+        if (data) {
+          queryClient.refetchQueries($api.queryOptions('get', '/user-library-access/user/{userId}', {
+            params: { path: { userId: data.user?.id as number } }
+          }));
+        }
+      },
+    }
+  );
 }

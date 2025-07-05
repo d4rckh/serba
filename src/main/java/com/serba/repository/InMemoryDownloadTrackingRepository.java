@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Singleton
 public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepository {
-
   private final Map<String, UserDownload> downloads = new ConcurrentHashMap<>();
 
   @Override
@@ -34,7 +33,7 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
 
   @Override
   public UserDownload updateDownloadProgress(String downloadUuid, long bytesRead) {
-    return downloads.computeIfPresent(downloadUuid, (uuid, download) -> {
+    return downloads.computeIfPresent(downloadUuid, (key, download) -> {
       download.setBytesRead(bytesRead);
       return download;
     });
@@ -42,7 +41,7 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
 
   @Override
   public UserDownload markCompleted(String downloadUuid) {
-    return downloads.computeIfPresent(downloadUuid, (id, download) -> {
+    return downloads.computeIfPresent(downloadUuid, (key, download) -> {
       download.setCompletedAt(Instant.now());
       return download;
     });
@@ -50,8 +49,8 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
 
   @Override
   public UserDownload markFailed(String downloadUuid) {
-    return downloads.computeIfPresent(downloadUuid, (id, download) -> {
-      download.setCompletedAt(Instant.now()); // Still mark as ended
+    return downloads.computeIfPresent(downloadUuid, (key, download) -> {
+      download.setCompletedAt(Instant.now());
       return download;
     });
   }

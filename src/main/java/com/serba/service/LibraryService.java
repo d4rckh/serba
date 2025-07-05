@@ -53,7 +53,7 @@ public class LibraryService {
     return this.libraryRepository.findAll();
   }
 
-public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path) throws IOException {
+  public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path) throws IOException {
     List<SystemFileFolder> contents = this.systemFilesService.listFolderContents(
         Paths.get(library.getSystemLocation(), path).toString());
 
@@ -62,8 +62,7 @@ public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path
         .thenComparing(SystemFileFolder::getName, String.CASE_INSENSITIVE_ORDER));
 
     return contents;
-}
-
+  }
 
   public InputStream downloadLibraryFile(LibraryEntity library, String path, UserEntity user) throws IOException {
     String fullPath = Paths.get(library.getSystemLocation(), path).toString();
@@ -72,7 +71,7 @@ public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path
 
     return systemFilesService.downloadFileStream(
         fullPath,
-        (bytesRead, total) -> this.downloadTrackingService.updateProgress(downloadUuid, bytesRead),
+        (read, total) -> this.downloadTrackingService.updateProgress(downloadUuid, read),
         () -> this.downloadTrackingService.completeDownload(downloadUuid),
         () -> this.downloadTrackingService.failDownload(downloadUuid));
   }

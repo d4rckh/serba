@@ -8,7 +8,9 @@ import java.util.List;
 import com.serba.domain.files.SystemFileFolder;
 import com.serba.entity.LibraryEntity;
 import com.serba.entity.UserEntity;
+import com.serba.security.AuthorizationUtils;
 import com.serba.service.LibraryService;
+import com.serba.service.UserLibraryAccessService;
 import com.serba.service.UserService;
 
 import io.micronaut.http.annotation.Delete;
@@ -32,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class LibraryController {
   private final LibraryService libraryService;
   private final UserService userService;
+  private final UserLibraryAccessService userLibraryAccessService;
 
   @Post
   @Secured("SUPER")
@@ -47,13 +50,20 @@ public class LibraryController {
 
   @Get
   @Secured(SecurityRule.IS_AUTHENTICATED)
-  List<LibraryEntity> findAll() {
-    return libraryService.findAll();
+  List<LibraryEntity> findAll(Authentication authentication) {
+    return libraryService.findAll()
+        .stream()
+        .filter(lib -> userLibraryAccessService.hasViewAccess(
+            (Long) authentication.getAttributes().get("UID"), lib.getId()))
+        .toList();
   }
 
   @Get("{id}")
   @Secured(SecurityRule.IS_AUTHENTICATED)
-  LibraryEntity findById(@PathVariable Long id) {
+  LibraryEntity findById(@PathVariable Long id, Authentication authentication) {
+    AuthorizationUtils.unauthorizedIfFalse(
+        userLibraryAccessService.hasViewAccess((Long) authentication.getAttributes().get("UID"), id));
+
     return libraryService.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Library not found with id: " + id));
   }
@@ -66,10 +76,15 @@ public class LibraryController {
 
   @Get("{id}/files")
   @Secured(SecurityRule.IS_AUTHENTICATED)
-  List<SystemFileFolder> getLibraryFiles(@PathVariable Long id, @QueryValue(defaultValue = "/") String path)
+  List<SystemFileFolder> getLibraryFiles(@PathVariable Long id, @QueryValue(defaultValue = "/") String path,
+      Authentication authentication)
       throws IOException {
+    AuthorizationUtils.unauthorizedIfFalse(
+        userLibraryAccessService.hasViewAccess((Long) authentication.getAttributes().get("UID"), id));
+
     LibraryEntity library = libraryService.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Library not found with id: " + id));
+
     return libraryService.getLibraryFiles(library, path);
   }
 
@@ -79,6 +94,9 @@ public class LibraryController {
       @PathVariable Long id,
       @QueryValue(defaultValue = "/") String path,
       Authentication authentication) throws IOException {
+    AuthorizationUtils.unauthorizedIfFalse(
+        userLibraryAccessService.hasViewAccess((Long) authentication.getAttributes().get("UID"), id));
+
     LibraryEntity library = libraryService.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Library not found with id: " + id));
     UserEntity user = userService.findByUsername(authentication.getName());

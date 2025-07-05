@@ -1,22 +1,23 @@
 services:
   backend:
-    image: serba-backend
+    image: ghcr.io/d4rckh/serba:latest
     container_name: serba-backend
+    volumes:
+      - D:\:/data
     ports:
       - "8080:8080"
     environment:
-      JDBC_URL: jdbc:postgresql://postgres:5432/serba
+      JDBC_URL: jdbc:postgresql://serba-postgres:5432/serba
       DB_USERNAME: serba
       DB_PASSWORD: serba
     depends_on:
-      - postgres
-  postgres:
+      - serba-postgres
+
+  serba-postgres:
     image: postgres:15
     container_name: serba-postgres
     environment:
       POSTGRES_DB: serba
       POSTGRES_USER: serba
       POSTGRES_PASSWORD: serba
-    ports:
-      - "1111:5432"
     restart: unless-stopped
