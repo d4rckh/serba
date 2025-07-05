@@ -2,6 +2,10 @@
 
 HTTP File server written in Micronaut
 
+- Add multiple libraries and users
+- Control which libraries can each user see
+- See current and past downloads and their progress and average speed
+
 ### minimal compose
 
 ```yaml
