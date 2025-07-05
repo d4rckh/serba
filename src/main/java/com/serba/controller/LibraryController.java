@@ -34,13 +34,13 @@ public class LibraryController {
   private final UserService userService;
 
   @Post
-  @Secured(SecurityRule.IS_AUTHENTICATED)
+  @Secured("SUPER")
   LibraryEntity createLibrary(@Body LibraryEntity libraryEntity) {
     return libraryService.createLibrary(libraryEntity);
   }
 
   @Put
-  @Secured(SecurityRule.IS_AUTHENTICATED)
+  @Secured("SUPER")
   LibraryEntity updateLibrary(@Body LibraryEntity libraryEntity) {
     return libraryService.updateLibrary(libraryEntity);
   }
@@ -59,7 +59,7 @@ public class LibraryController {
   }
 
   @Delete
-  @Secured(SecurityRule.IS_AUTHENTICATED)
+  @Secured("SUPER")
   void deleteLibrary(@Body LibraryEntity libraryEntity) {
     libraryService.deleteLibrary(libraryEntity);
   }

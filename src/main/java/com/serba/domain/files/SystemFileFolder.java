@@ -10,6 +10,6 @@ import lombok.Data;
 public class SystemFileFolder {
   private String name;
   private String path;
-  
+  private long size;
   private SystemFileFolderType type;
 }

@@ -1,20 +1,56 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Folder, FileText, ArrowLeft } from "lucide-react";
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLibraryFiles } from "./lib/queries";
 import type { components } from "./lib/v1";
+import { Dialog, DialogFooter, DialogTrigger, DialogContent, DialogTitle, DialogClose, DialogDescription } from "./components/ui/dialog";
 
 interface FileBrowserProps {
   libraries: components["schemas"]["LibraryEntity"][];
+}
+
+export function FileDialog({ libraryId, item, children, path }: { path: string, libraryId: number, children: React.ReactNode, item: components["schemas"]["SystemFileFolder"] }) {
+  const getDownloadUrl = () => {
+    const fullPath = [path, item.name].join("/").replace(/\/+/g, "/");
+    const encoded = encodeURIComponent(fullPath);
+    return `${import.meta.env.PROD ? "/" : "/api/"}libraries/${libraryId}/download?path=${encoded}`;
+  };
+
+  return <>
+    <Dialog>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent>
+        <DialogTitle>
+          {item.name}
+        </DialogTitle>
+        <DialogDescription>
+          {item.size ? `Size: ${(item.size / 1024).toFixed(2)} KB` : "Folder"}
+        </DialogDescription>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button asChild>
+              <a
+                href={`${getDownloadUrl()}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download
+              </a>
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </>
 }
 
 export default function FileBrowser({ libraries }: FileBrowserProps) {
@@ -42,10 +78,9 @@ export default function FileBrowser({ libraries }: FileBrowserProps) {
     setPath(newPath);
   };
 
-  const getDownloadUrl = (relativePath: string) => {
-    const encoded = encodeURIComponent(relativePath);
-    return `http://localhost:8080/libraries/${selectedLibraryId}/download?path=${encoded}`;
-  };
+  if (libraries.length === 0) {
+    return <div className="text-muted-foreground">No libraries available.</div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -82,14 +117,8 @@ export default function FileBrowser({ libraries }: FileBrowserProps) {
 
       {!isLoading && !isError && (
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Item</TableHead>
-            </TableRow>
-          </TableHeader>
           <TableBody>
             {data?.map((item) => {
-              const fullPath = [path, item.name].join("/").replace(/\/+/g, "/");
 
               const content = (
                 <div className="flex items-center gap-2">
@@ -113,14 +142,9 @@ export default function FileBrowser({ libraries }: FileBrowserProps) {
                     }}
                   >
                     {item.type === "FILE" ? (
-                      <a
-                        href={getDownloadUrl(fullPath)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block w-full"
-                      >
+                      <FileDialog path={path} libraryId={selectedLibraryId as number} item={item}>
                         {content}
-                      </a>
+                      </FileDialog>
                     ) : (
                       content
                     )}

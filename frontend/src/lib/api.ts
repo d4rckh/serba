@@ -9,8 +9,10 @@ const fetchWithCookies: typeof fetch = (input, init = {}) =>
         credentials: "include",
     });
 
+const baseUrl = import.meta.env.PROD ? "/" : "/api";
+
 const fetchClient = createFetchClient<paths>({
-    baseUrl: "http://localhost:8080/",
+    baseUrl,
     fetch: fetchWithCookies,
 });
 

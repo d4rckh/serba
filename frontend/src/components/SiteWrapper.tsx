@@ -6,6 +6,7 @@ export default function SiteWrapper({ children }: { children: React.ReactNode })
   const user = useUserQuery();
   let navigate = useNavigate();
   let location = useLocation();
+
   useEffect(() => {
     if (user.isError) {
       if (location.pathname !== "/login") {
@@ -15,10 +16,12 @@ export default function SiteWrapper({ children }: { children: React.ReactNode })
       if (location.pathname === "/login") {
         navigate("/");
       }
+      if (location.pathname === "/admin" && !user.data.superUser) {
+        navigate("/");
+      }
       console.log("User data fetched successfully:", user.data);
     }
   }, [user]);
-
 
   return (
     <div className="max-w-4xl mx-auto">

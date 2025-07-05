@@ -68,6 +68,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/signout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tracking": {
         parameters: {
             query?: never;
@@ -126,7 +142,7 @@ export interface paths {
         get: operations["findAll_1"];
         put?: never;
         post: operations["createUser"];
-        delete?: never;
+        delete: operations["deleteUser"];
         options?: never;
         head?: never;
         patch?: never;
@@ -141,6 +157,22 @@ export interface paths {
         };
         get: operations["getCurrentUser"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updatePassword"];
         post?: never;
         delete?: never;
         options?: never;
@@ -165,11 +197,15 @@ export interface components {
         SystemFileFolder: {
             name?: string;
             path?: string;
+            /** Format: int64 */
+            size?: number;
             type?: components["schemas"]["SystemFileFolderType"];
         };
         /** @enum {string} */
         SystemFileFolderType: "FOLDER" | "FILE";
         UserDownload: {
+            /** Format: int64 */
+            averageSpeed?: number;
             user: components["schemas"]["UserEntity"];
             library: components["schemas"]["LibraryEntity"];
             path: string;
@@ -189,6 +225,7 @@ export interface components {
             hashedPassword?: string;
             /** Format: date-time */
             createdAt?: string;
+            superUser?: boolean;
         };
     };
     responses: never;
@@ -359,6 +396,26 @@ export interface operations {
             };
         };
     };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description logout 200 response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
     getDownloadTracking: {
         parameters: {
             query?: never;
@@ -467,6 +524,28 @@ export interface operations {
             };
         };
     };
+    deleteUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserEntity"];
+            };
+        };
+        responses: {
+            /** @description deleteUser 200 response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     getCurrentUser: {
         parameters: {
             query?: never;
@@ -477,6 +556,30 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description getCurrentUser 200 response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserEntity"];
+                };
+            };
+        };
+    };
+    updatePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUserRequest"];
+            };
+        };
+        responses: {
+            /** @description updatePassword 200 response */
             200: {
                 headers: {
                     [name: string]: unknown;

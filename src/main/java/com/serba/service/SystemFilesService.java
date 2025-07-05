@@ -31,6 +31,7 @@ public class SystemFilesService {
         SystemFileFolder entry = new SystemFileFolder();
         entry.setName(path.getFileName().toString());
         entry.setPath(path.toAbsolutePath().toString());
+        entry.setSize(Files.isDirectory(path) ? 0 : Files.size(path));
         entry.setType(Files.isDirectory(path) ? SystemFileFolderType.FOLDER : SystemFileFolderType.FILE);
 
         result.add(entry);

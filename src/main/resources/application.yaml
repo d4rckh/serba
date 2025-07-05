@@ -8,13 +8,22 @@ datasources:
     db-type: postgres
     dialect: POSTGRES
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:1111/serba
-    username: serba
-    password: serba
+    url: ${JDBC_URL:"jdbc:postgresql://localhost:1111/serba"}
+    username: ${DB_USERNAME:serba}
+    password: ${DB_PASSWORD:serba}
 
 micronaut:
   application:
     name: serba
+    banner:
+      enabled: false
+  router:
+    static-resources:
+      default:
+        paths:
+          - classpath:public
+        mapping: /**
+        enabled: true
   server:
     port: 8080
     cors:
@@ -30,10 +39,16 @@ micronaut:
       allowed-headers:
         - Authorization
         - Content-Type
+        - Origin
+        - Accept
+        - X-Requested-With
       allow-credentials: true
   security:
     enabled: true
     authentication: session
+    logout:
+      enabled: true
+      endpoint: /logout
     redirect:
       enabled: false
     intercept-url-map:
@@ -42,7 +57,7 @@ micronaut:
           - isAnonymous()   # allow anonymous access to /login
       - pattern: /**
         access:
-          - isAuthenticated()  # protect all other routes  test:
+          - isAnonymous()
     resources:
       enabled: false
 

@@ -1,0 +1,7 @@
+ALTER TABLE users
+ADD COLUMN super_user BOOLEAN DEFAULT FALSE;
+
+UPDATE users SET super_user = FALSE WHERE super_user IS NULL;
+
+ALTER TABLE users
+ALTER COLUMN super_user SET NOT NULL;

@@ -9,7 +9,7 @@ export default function useLogin() {
       return;
     }
 
-    fetch("http://localhost:8080/login", {
+    return fetch(import.meta.env.PROD ? "/login" : "/api/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -27,7 +27,7 @@ export default function useLogin() {
 export function useLogout() {
   const queryClient = useQueryClient();
   return () => {
-    fetch("http://localhost:8080/logout", {
+    fetch(import.meta.env.PROD ? "/signout" : "/api/signout", {
       method: "POST",
       credentials: "include",
     }).then(() => {
@@ -99,6 +99,7 @@ export function useDownloadTracking() {
   const user = useUserQuery();
   return $api.useQuery('get', '/tracking', undefined, {
     enabled: user.isSuccess,
+    refetchInterval: 5000,
   });
 }
 
@@ -127,6 +128,41 @@ export function useDeleteLibrary() {
   return $api.useMutation("delete", "/libraries", {
     onSettled: () => {
       queryClient.refetchQueries($api.queryOptions("get", "/libraries"));
+    },
+  });
+}
+
+export function useUsers() {
+  const user = useUserQuery();
+  return $api.useQuery("get", "/users", undefined, {
+    enabled: user.isSuccess,
+    retry: false,
+  });
+}
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+  return $api.useMutation("post", "/users", {
+    onSettled: () => {
+      queryClient.refetchQueries($api.queryOptions("get", "/users"));
+    },
+  });
+}
+
+export function useUpdatePassword() {
+  const queryClient = useQueryClient();
+  return $api.useMutation("put", "/users/password", {
+    onSettled: () => {
+      queryClient.refetchQueries($api.queryOptions("get", "/users"));
+    },
+  });
+}
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+  return $api.useMutation("delete", "/users", {
+    onSettled: () => {
+      queryClient.refetchQueries($api.queryOptions("get", "/users"));
     },
   });
 }

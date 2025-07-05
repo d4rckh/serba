@@ -1,7 +1,10 @@
 package com.serba.domain.downloads;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.serba.entity.LibraryEntity;
 import com.serba.entity.UserEntity;
 
@@ -22,4 +25,15 @@ public class UserDownload {
 
   private Instant startedAt;
   private Instant completedAt;
+
+  @JsonProperty("averageSpeed")
+  public long getAverageSpeed() {
+    if (startedAt == null || bytesRead <= 0) {
+      return 0;
+    }
+    long seconds = Duration.between(
+        startedAt, Objects.isNull(completedAt) ? Instant.now() : completedAt
+    ).getSeconds();
+    return seconds > 0 ? bytesRead / seconds : bytesRead;
+  }
 }

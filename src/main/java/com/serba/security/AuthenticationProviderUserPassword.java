@@ -9,6 +9,9 @@ import io.micronaut.security.authentication.provider.HttpRequestReactiveAuthenti
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.reactivestreams.Publisher;
 
 import com.serba.entity.UserEntity;
@@ -36,7 +39,10 @@ public class AuthenticationProviderUserPassword<B> implements HttpRequestReactiv
                     authenticationRequest.getIdentity(), authenticationRequest.getSecret());
             if (user != null) {
                 log.info("Authentication successful for user: {}", authenticationRequest.getIdentity());
-                emitter.next(AuthenticationResponse.success((String) authenticationRequest.getIdentity()));
+                
+                List<String> roles = user.getSuperUser().equals(true) ? List.of("SUPER") : List.of();
+
+                emitter.next(AuthenticationResponse.success((String) authenticationRequest.getIdentity(), roles));
                 emitter.complete();
             } else {
                 emitter.error(AuthenticationResponse.exception());

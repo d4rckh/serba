@@ -23,6 +23,6 @@ public class LibraryEntity {
   @Column(nullable = false, unique = true)
   private String name;
 
-  @Column(nullable = false, updatable = false)
+  @Column(nullable = false)
   private String systemLocation;
 }

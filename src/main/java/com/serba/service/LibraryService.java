@@ -30,7 +30,11 @@ public class LibraryService {
   }
 
   public LibraryEntity updateLibrary(LibraryEntity libraryEntity) {
-    return this.libraryRepository.update(libraryEntity);
+    LibraryEntity existingLibrary = this.libraryRepository.findById(libraryEntity.getId())
+        .orElseThrow(() -> new IllegalArgumentException("Library not found with id: " + libraryEntity.getId()));
+    existingLibrary.setName(libraryEntity.getName());
+    existingLibrary.setSystemLocation(libraryEntity.getSystemLocation());
+    return this.libraryRepository.update(existingLibrary);
   }
 
   public Optional<LibraryEntity> findById(Long id) {

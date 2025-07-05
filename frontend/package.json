@@ -11,6 +11,7 @@
     "api": "pnpm dlx openapi-typescript ../build/classes/java/main/META-INF/swagger/serba-0.0.yml -o src/lib/v1.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-checkbox": "^1.3.2",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
@@ -28,10 +29,12 @@
     "openapi-react-query": "^0.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-hook-form": "^7.60.0",
     "react-router": "^7.6.3",
     "recharts": "^3.0.2",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "zod": "^3.25.74"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",

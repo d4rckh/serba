@@ -9,6 +9,12 @@
     }
   ],
   "compilerOptions": {
+    "noEmitOnError": false,       // still emit files on errors
+    "skipLibCheck": true,         // skip checking of declaration files (usually 3rd party libs)
+    "strict": false,              // disable all strict checks (including noImplicitAny, strictNullChecks)
+    "noImplicitAny": false,       // allow implicit any types
+    "noUnusedLocals": false,      // do not error on unused variables/imports
+    "noUnusedParameters": false,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
