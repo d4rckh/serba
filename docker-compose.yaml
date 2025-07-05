@@ -3,7 +3,7 @@ services:
     image: ghcr.io/d4rckh/serba:latest
     container_name: serba-backend
     volumes:
-      - D:\:/data
+      - /my_data_folder:/data
     ports:
       - "8080:8080"
     environment:
