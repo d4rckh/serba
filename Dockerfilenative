@@ -1,0 +1,24 @@
+# Stage 1: Build the application
+FROM container-registry.oracle.com/graalvm/native-image:21-ol8 AS builder
+
+# Set the working directory to /build
+WORKDIR /build
+
+# Install necessary utilities
+RUN microdnf install -y findutils
+
+# Copy the source code into the image for building
+COPY . .
+
+# Build the application
+RUN ./gradlew nativeCompile
+
+# Stage 2: Create the deployment image
+FROM container-registry.oracle.com/os/oraclelinux:8-slim
+
+EXPOSE 8080
+
+# Copy the native executable into the container
+COPY --from=builder /build/build/native/nativeCompile/serba /app
+
+ENTRYPOINT ["/app"]

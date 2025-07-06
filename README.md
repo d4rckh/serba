@@ -1,12 +1,13 @@
 # Serba
 
-HTTP File server written in Micronaut
+Lightweight HTTP File server written in Micronaut and compiled using GraalVM.
 
+Features:
 - Add multiple libraries and users
 - Control which libraries can each user see
-- See current and past downloads and their progress and average speed
+- See current and past downloads, their progress and average speed
 
-### minimal compose
+### minimal docker compose
 
 ```yaml
 services:
