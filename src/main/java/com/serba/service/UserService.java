@@ -5,7 +5,10 @@ import com.serba.entity.UserEntity;
 import com.serba.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
+
+import java.lang.foreign.Linker.Option;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,14 +39,11 @@ public class UserService {
     return userRepository.save(user);
   }
 
-  public UserEntity findByUsernameAndPassword(String username, String password) {
-    UserEntity user =
-        userRepository
-            .findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+  public Optional<UserEntity> findByUsernameAndPassword(String username, String password) {
+    Optional<UserEntity> user = this.userRepository.findByUsername(username);
 
-    if (!checkPassword(password, user.getHashedPassword()))
-      throw new RuntimeException("Invalid password");
+    if (user.isEmpty() || !checkPassword(password, user.get().getHashedPassword()))
+      return Optional.empty();
 
     return user;
   }

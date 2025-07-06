@@ -6,6 +6,7 @@ Features:
 - Add multiple libraries and users
 - Control which libraries can each user see
 - See current and past downloads, their progress and average speed
+- Zipped folder downloads (note: the zipping process is currently happening in background and the file will download after it's zipped, the request to the link might seem to be hanging while that's happening, just wait)
 
 ### minimal docker compose
 

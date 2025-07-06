@@ -11,6 +11,8 @@ import io.micronaut.security.authentication.provider.HttpRequestReactiveAuthenti
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -30,12 +32,19 @@ public class AuthenticationProviderUserPassword<B>
   public Publisher<AuthenticationResponse> authenticate(
       @Nullable HttpRequest<B> httpRequest,
       @NonNull AuthenticationRequest<String, String> authenticationRequest) {
-    log.info("Got authentication request: {}", authenticationRequest.getIdentity());
     return Flux.create(
         emitter -> {
-          UserEntity user =
-              userService.findByUsernameAndPassword(
-                  authenticationRequest.getIdentity(), authenticationRequest.getSecret());
+          Optional<UserEntity> userOptional = userService.findByUsernameAndPassword(
+              authenticationRequest.getIdentity(), authenticationRequest.getSecret());
+
+          if (userOptional.isEmpty()) {
+            log.warn("Authentication failure for user: {}", authenticationRequest.getIdentity());
+            emitter.error(AuthenticationResponse.exception());
+            return;
+          }
+
+          UserEntity user = userOptional.get();
+
           if (user != null) {
             log.info("Authentication successful for user: {}", authenticationRequest.getIdentity());
 
