@@ -1,13 +1,11 @@
 package com.serba.controller;
 
-import java.util.List;
-
 import com.serba.domain.downloads.UserDownload;
 import com.serba.service.DownloadTrackingService;
-
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.security.annotation.Secured;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @Controller("tracking")

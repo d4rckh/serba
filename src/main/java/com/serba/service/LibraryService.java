@@ -1,5 +1,11 @@
 package com.serba.service;
 
+import com.serba.domain.files.SystemFileFolder;
+import com.serba.domain.files.SystemFileFolderType;
+import com.serba.entity.LibraryEntity;
+import com.serba.entity.UserEntity;
+import com.serba.repository.LibraryRepository;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -7,14 +13,6 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-
-import com.serba.domain.files.SystemFileFolder;
-import com.serba.domain.files.SystemFileFolderType;
-import com.serba.entity.LibraryEntity;
-import com.serba.entity.UserEntity;
-import com.serba.repository.LibraryRepository;
-
-import jakarta.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,8 +51,13 @@ public class LibraryService {
   }
 
   public LibraryEntity updateLibrary(LibraryEntity libraryEntity) {
-    LibraryEntity existingLibrary = this.libraryRepository.findById(libraryEntity.getId())
-        .orElseThrow(() -> new IllegalArgumentException("Library not found with id: " + libraryEntity.getId()));
+    LibraryEntity existingLibrary =
+        this.libraryRepository
+            .findById(libraryEntity.getId())
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException(
+                        "Library not found with id: " + libraryEntity.getId()));
     existingLibrary.setName(libraryEntity.getName());
     existingLibrary.setSystemLocation(libraryEntity.getSystemLocation());
     return this.libraryRepository.update(existingLibrary);
@@ -76,23 +79,27 @@ public class LibraryService {
     return this.libraryRepository.findAll();
   }
 
-  public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path) throws IOException {
+  public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path)
+      throws IOException {
     Path safePath = resolveSafePath(library.getSystemLocation(), path);
 
-    List<SystemFileFolder> contents = this.systemFilesService.listFolderContents(safePath.toString());
+    List<SystemFileFolder> contents =
+        this.systemFilesService.listFolderContents(safePath.toString());
 
-    contents.sort(Comparator
-        .comparing((SystemFileFolder f) -> f.getType() != SystemFileFolderType.FOLDER)
-        .thenComparing(SystemFileFolder::getName, String.CASE_INSENSITIVE_ORDER));
+    contents.sort(
+        Comparator.comparing((SystemFileFolder f) -> f.getType() != SystemFileFolderType.FOLDER)
+            .thenComparing(SystemFileFolder::getName, String.CASE_INSENSITIVE_ORDER));
 
     return contents;
   }
 
-  public InputStream downloadLibraryFile(LibraryEntity library, String path, UserEntity user) throws IOException {
+  public InputStream downloadLibraryFile(LibraryEntity library, String path, UserEntity user)
+      throws IOException {
     Path safePath = resolveSafePath(library.getSystemLocation(), path);
     long totalBytes = java.nio.file.Files.size(safePath);
 
-    String downloadUuid = this.downloadTrackingService.startTracking(user, library, path, totalBytes);
+    String downloadUuid =
+        this.downloadTrackingService.startTracking(user, library, path, totalBytes);
 
     return systemFilesService.downloadFileStream(
         safePath.toString(),

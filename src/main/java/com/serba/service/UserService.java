@@ -1,18 +1,15 @@
 package com.serba.service;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.mindrot.jbcrypt.BCrypt;
-
 import com.serba.domain.CreateUserRequest;
 import com.serba.entity.UserEntity;
 import com.serba.repository.UserRepository;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mindrot.jbcrypt.BCrypt;
 
 @Singleton
 @RequiredArgsConstructor
@@ -40,8 +37,10 @@ public class UserService {
   }
 
   public UserEntity findByUsernameAndPassword(String username, String password) {
-    UserEntity user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new RuntimeException("User not found"));
+    UserEntity user =
+        userRepository
+            .findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
     if (!checkPassword(password, user.getHashedPassword()))
       throw new RuntimeException("Invalid password");
@@ -50,14 +49,13 @@ public class UserService {
   }
 
   public UserEntity findByUsername(String username) {
-    return userRepository.findByUsername(username)
+    return userRepository
+        .findByUsername(username)
         .orElseThrow(() -> new RuntimeException("User not found"));
   }
 
-
   public UserEntity findById(Long id) {
-    return userRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("User not found"));
+    return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
   }
 
   public List<UserEntity> findAll() {

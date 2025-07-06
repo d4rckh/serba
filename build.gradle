@@ -3,6 +3,16 @@ plugins {
     id("com.gradleup.shadow") version "8.3.7"
     id("io.micronaut.aot") version "4.5.4"
     id("org.graalvm.buildtools.native") version "0.10.2"
+    id "com.diffplug.spotless" version "6.25.0"
+}
+
+spotless {
+    java {
+        googleJavaFormat() // or prettier(), eclipse()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
 version = "0.1"

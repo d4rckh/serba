@@ -1,10 +1,9 @@
 package com.serba.repository;
 
-import java.util.List;
-
 import com.serba.domain.downloads.UserDownload;
 import com.serba.entity.LibraryEntity;
 import com.serba.entity.UserEntity;
+import java.util.List;
 
 public interface DownloadTrackingRepository {
   String trackDownload(UserEntity user, LibraryEntity library, String path, long totalBytes);

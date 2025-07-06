@@ -1,11 +1,8 @@
 package com.serba.controller;
 
-import java.util.List;
-
 import com.serba.domain.CreateUserRequest;
 import com.serba.entity.UserEntity;
 import com.serba.service.UserService;
-
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
@@ -15,6 +12,7 @@ import io.micronaut.http.annotation.Put;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.SecurityRule;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @Controller("users")

@@ -3,16 +3,14 @@ package com.serba.service;
 import com.serba.domain.files.SystemFileFolder;
 import com.serba.domain.files.SystemFileFolderType;
 import com.serba.streams.ProgressInputStream;
-
 import jakarta.inject.Singleton;
-
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.io.InputStream;
-import java.io.FileNotFoundException;
 
 @Singleton
 public class SystemFilesService {
@@ -32,7 +30,8 @@ public class SystemFilesService {
         entry.setName(path.getFileName().toString());
         entry.setPath(path.toAbsolutePath().toString());
         entry.setSize(Files.isDirectory(path) ? 0 : Files.size(path));
-        entry.setType(Files.isDirectory(path) ? SystemFileFolderType.FOLDER : SystemFileFolderType.FILE);
+        entry.setType(
+            Files.isDirectory(path) ? SystemFileFolderType.FOLDER : SystemFileFolderType.FILE);
 
         result.add(entry);
       }
@@ -41,10 +40,12 @@ public class SystemFilesService {
     return result;
   }
 
-  public InputStream downloadFileStream(String path,
+  public InputStream downloadFileStream(
+      String path,
       BiConsumer<Long, Long> progressCallback,
       Runnable onComplete,
-      Runnable onCloseEarly) throws IOException {
+      Runnable onCloseEarly)
+      throws IOException {
 
     Path filePath = Paths.get(path);
 
@@ -57,5 +58,4 @@ public class SystemFilesService {
 
     return new ProgressInputStream(raw, totalBytes, progressCallback, onComplete, onCloseEarly);
   }
-
 }

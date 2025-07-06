@@ -1,16 +1,14 @@
 package com.serba.controller;
 
-import java.util.List;
-
 import com.serba.entity.UserLibraryAccessEntity;
 import com.serba.service.UserLibraryAccessService;
-
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.PathVariable;
 import io.micronaut.http.annotation.Put;
 import io.micronaut.security.annotation.Secured;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @Controller("user-library-access")
@@ -32,7 +30,8 @@ public class UserLibraryAccessController {
 
   @Put
   @Secured("SUPER")
-  public UserLibraryAccessEntity updateUserLibraryAccess(@Body UserLibraryAccessEntity userLibraryAccess) {
+  public UserLibraryAccessEntity updateUserLibraryAccess(
+      @Body UserLibraryAccessEntity userLibraryAccess) {
     return userLibraryAccessService.updateUserLibraryAccess(userLibraryAccess);
   }
 }

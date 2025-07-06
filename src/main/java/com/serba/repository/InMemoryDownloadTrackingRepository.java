@@ -3,9 +3,7 @@ package com.serba.repository;
 import com.serba.domain.downloads.UserDownload;
 import com.serba.entity.LibraryEntity;
 import com.serba.entity.UserEntity;
-
 import jakarta.inject.Singleton;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -17,42 +15,50 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
   private final Map<String, UserDownload> downloads = new ConcurrentHashMap<>();
 
   @Override
-  public String trackDownload(UserEntity user, LibraryEntity library, String path, long totalBytes) {
+  public String trackDownload(
+      UserEntity user, LibraryEntity library, String path, long totalBytes) {
     String uuid = UUID.randomUUID().toString();
-    UserDownload download = UserDownload.builder()
-        .user(user)
-        .library(library)
-        .path(path)
-        .totalBytes(totalBytes)
-        .bytesRead(0)
-        .startedAt(Instant.now())
-        .build();
+    UserDownload download =
+        UserDownload.builder()
+            .user(user)
+            .library(library)
+            .path(path)
+            .totalBytes(totalBytes)
+            .bytesRead(0)
+            .startedAt(Instant.now())
+            .build();
     downloads.put(uuid, download);
     return uuid;
   }
 
   @Override
   public UserDownload updateDownloadProgress(String downloadUuid, long bytesRead) {
-    return downloads.computeIfPresent(downloadUuid, (key, download) -> {
-      download.setBytesRead(bytesRead);
-      return download;
-    });
+    return downloads.computeIfPresent(
+        downloadUuid,
+        (key, download) -> {
+          download.setBytesRead(bytesRead);
+          return download;
+        });
   }
 
   @Override
   public UserDownload markCompleted(String downloadUuid) {
-    return downloads.computeIfPresent(downloadUuid, (key, download) -> {
-      download.setCompletedAt(Instant.now());
-      return download;
-    });
+    return downloads.computeIfPresent(
+        downloadUuid,
+        (key, download) -> {
+          download.setCompletedAt(Instant.now());
+          return download;
+        });
   }
 
   @Override
   public UserDownload markFailed(String downloadUuid) {
-    return downloads.computeIfPresent(downloadUuid, (key, download) -> {
-      download.setCompletedAt(Instant.now());
-      return download;
-    });
+    return downloads.computeIfPresent(
+        downloadUuid,
+        (key, download) -> {
+          download.setCompletedAt(Instant.now());
+          return download;
+        });
   }
 
   @Override
@@ -62,9 +68,7 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
 
   @Override
   public List<UserDownload> findByUserId(Long userId) {
-    return downloads.values().stream()
-        .filter(d -> d.getUser().getId().equals(userId))
-        .toList();
+    return downloads.values().stream().filter(d -> d.getUser().getId().equals(userId)).toList();
   }
 
   @Override

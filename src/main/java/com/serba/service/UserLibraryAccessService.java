@@ -1,12 +1,9 @@
 package com.serba.service;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.serba.entity.UserLibraryAccessEntity;
 import com.serba.repository.UserLibraryAccessRepository;
-
 import jakarta.inject.Singleton;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @Singleton
@@ -17,14 +14,16 @@ public class UserLibraryAccessService {
   private final UserService userService;
 
   private UserLibraryAccessEntity findByUserIdAndLibraryId(Long userId, Long libraryId) {
-    return this.userLibraryAccessRepository.findByUserIdAndLibraryId(userId, libraryId)
-        .orElseGet(() -> {
-          UserLibraryAccessEntity access = new UserLibraryAccessEntity();
-          access.setUser(this.userService.findById(userId));
-          access.setLibrary(this.libraryService.findById(libraryId).orElseThrow());
-          access.setViewLibrary(false);
-          return this.userLibraryAccessRepository.save(access);
-        });
+    return this.userLibraryAccessRepository
+        .findByUserIdAndLibraryId(userId, libraryId)
+        .orElseGet(
+            () -> {
+              UserLibraryAccessEntity access = new UserLibraryAccessEntity();
+              access.setUser(this.userService.findById(userId));
+              access.setLibrary(this.libraryService.findById(libraryId).orElseThrow());
+              access.setViewLibrary(false);
+              return this.userLibraryAccessRepository.save(access);
+            });
   }
 
   public boolean hasViewAccess(Long userId, Long libraryId) {
@@ -41,10 +40,11 @@ public class UserLibraryAccessService {
         .toList();
   }
 
-  public UserLibraryAccessEntity updateUserLibraryAccess(UserLibraryAccessEntity userLibraryAccess) {
-    UserLibraryAccessEntity existing = this.findByUserIdAndLibraryId(
-        userLibraryAccess.getUser().getId(),
-        userLibraryAccess.getLibrary().getId());
+  public UserLibraryAccessEntity updateUserLibraryAccess(
+      UserLibraryAccessEntity userLibraryAccess) {
+    UserLibraryAccessEntity existing =
+        this.findByUserIdAndLibraryId(
+            userLibraryAccess.getUser().getId(), userLibraryAccess.getLibrary().getId());
 
     existing.setViewLibrary(userLibraryAccess.isViewLibrary());
 

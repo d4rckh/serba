@@ -19,5 +19,4 @@ public class LogoutController {
 
     return HttpResponse.ok();
   }
-
 }
