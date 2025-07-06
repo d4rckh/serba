@@ -1,5 +1,6 @@
 package com.serba.controller;
 
+import com.serba.domain.downloads.FileDownload;
 import com.serba.domain.files.SystemFileFolder;
 import com.serba.entity.LibraryEntity;
 import com.serba.entity.UserEntity;
@@ -23,7 +24,6 @@ import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.SecurityRule;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -111,9 +111,9 @@ public class LibraryController {
             .orElseThrow(() -> new IllegalArgumentException("Library not found with id: " + id));
     UserEntity user = userService.findByUsername(authentication.getName());
 
-    InputStream stream = libraryService.downloadLibraryFile(library, path, user);
-
-    String filename = Paths.get(path).getFileName().toString();
+    FileDownload fileDownload = libraryService.downloadLibraryFile(library, path, user);
+    InputStream stream = fileDownload.getStream();
+    String filename = fileDownload.getFilename();
 
     return HttpResponse.ok(
         new StreamedFile(stream, MediaType.APPLICATION_OCTET_STREAM_TYPE).attach(filename));

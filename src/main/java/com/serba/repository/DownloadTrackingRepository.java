@@ -6,7 +6,8 @@ import com.serba.entity.UserEntity;
 import java.util.List;
 
 public interface DownloadTrackingRepository {
-  String trackDownload(UserEntity user, LibraryEntity library, String path, long totalBytes);
+  String trackDownload(
+      UserEntity user, LibraryEntity library, String path, String realSystemPath, long totalBytes);
 
   UserDownload updateDownloadProgress(String downloadUuid, long bytesRead);
 

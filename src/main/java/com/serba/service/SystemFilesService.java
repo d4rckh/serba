@@ -1,5 +1,6 @@
 package com.serba.service;
 
+import com.serba.domain.downloads.FileDownload;
 import com.serba.domain.files.SystemFileFolder;
 import com.serba.domain.files.SystemFileFolderType;
 import com.serba.streams.ProgressInputStream;
@@ -7,10 +8,13 @@ import jakarta.inject.Singleton;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Singleton
 public class SystemFilesService {
@@ -40,22 +44,55 @@ public class SystemFilesService {
     return result;
   }
 
-  public InputStream downloadFileStream(
+  public FileDownload downloadFileStream(
       String path,
       BiConsumer<Long, Long> progressCallback,
-      Runnable onComplete,
-      Runnable onCloseEarly)
+      FileCompletionHandler fileCompletionHandler)
       throws IOException {
 
     Path filePath = Paths.get(path);
 
-    if (!Files.exists(filePath) || Files.isDirectory(filePath)) {
-      throw new FileNotFoundException("File not found or is a directory: " + path);
+    if (!Files.exists(filePath)) {
+      fileCompletionHandler.setSuccessful(false);
+      fileCompletionHandler.run();
+      throw new FileNotFoundException("File not found: " + path);
+    }
+
+    if (!Files.isRegularFile(filePath)) {
+      fileCompletionHandler.setSuccessful(false);
+      fileCompletionHandler.run();
+      throw new IOException("Path is not a file: " + path);
     }
 
     long totalBytes = Files.size(filePath);
     InputStream raw = Files.newInputStream(filePath);
+    InputStream stream =
+        new ProgressInputStream(raw, totalBytes, progressCallback, fileCompletionHandler);
+    String filename = filePath.getFileName().toString();
+    return FileDownload.builder().stream(stream).filename(filename).build();
+  }
 
-    return new ProgressInputStream(raw, totalBytes, progressCallback, onComplete, onCloseEarly);
+  public void zipDirectory(Path sourceDir, String baseName, ZipOutputStream zipOut)
+      throws IOException {
+    Files.walk(sourceDir)
+        .forEach(
+            path -> {
+              try {
+                String entryName =
+                    baseName + "/" + sourceDir.relativize(path).toString().replace("\\", "/");
+                if (Files.isDirectory(path)) {
+                  if (Files.list(path).findAny().isEmpty()) {
+                    zipOut.putNextEntry(new ZipEntry(entryName + "/"));
+                    zipOut.closeEntry();
+                  }
+                  return;
+                }
+                zipOut.putNextEntry(new ZipEntry(entryName));
+                Files.copy(path, zipOut);
+                zipOut.closeEntry();
+              } catch (IOException e) {
+                throw new UncheckedIOException(e);
+              }
+            });
   }
 }

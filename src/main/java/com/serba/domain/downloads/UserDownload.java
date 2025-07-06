@@ -17,6 +17,7 @@ public class UserDownload {
   private UserEntity user;
   private LibraryEntity library;
   private String path;
+  private String realSystemPath;
 
   private long bytesRead;
   private long totalBytes;

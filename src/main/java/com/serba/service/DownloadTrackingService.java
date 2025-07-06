@@ -16,14 +16,15 @@ public class DownloadTrackingService {
   private final DownloadTrackingRepository downloadTrackingRepository;
 
   public String startTracking(
-      UserEntity user, LibraryEntity library, String path, long totalBytes) {
+      UserEntity user, LibraryEntity library, String path, String realSystemPath, long totalBytes) {
     log.info(
         "User {} is starting download of {} from library {} with total bytes: {}",
         user.getUsername(),
         path,
         library.getName(),
         totalBytes);
-    return downloadTrackingRepository.trackDownload(user, library, path, totalBytes);
+    return downloadTrackingRepository.trackDownload(
+        user, library, path, realSystemPath, totalBytes);
   }
 
   public void completeDownload(String downloadUuid) {

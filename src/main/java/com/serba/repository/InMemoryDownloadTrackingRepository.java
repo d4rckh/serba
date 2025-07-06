@@ -16,13 +16,14 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
 
   @Override
   public String trackDownload(
-      UserEntity user, LibraryEntity library, String path, long totalBytes) {
+      UserEntity user, LibraryEntity library, String path, String realSystemPath, long totalBytes) {
     String uuid = UUID.randomUUID().toString();
     UserDownload download =
         UserDownload.builder()
             .user(user)
             .library(library)
             .path(path)
+            .realSystemPath(realSystemPath)
             .totalBytes(totalBytes)
             .bytesRead(0)
             .startedAt(Instant.now())

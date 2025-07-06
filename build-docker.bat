@@ -22,7 +22,7 @@ if errorlevel 1 (
 REM Step 2: Build Docker image (which builds the backend inside Docker)
 echo Building Docker image...
 
-docker build -t serba-backend:latest -f Dockerfile .
+docker build -t serba-backend:latest -f Dockerfilenative .
 
 if errorlevel 1 (
     echo Docker build failed.

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Folder, FileText, ArrowLeft } from "lucide-react";
+import { Folder, FileText, ArrowLeft, ArrowRight, DownloadIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,28 +10,49 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLibraryFiles } from "./lib/queries";
 import type { components } from "./lib/v1";
-import { Dialog, DialogFooter, DialogTrigger, DialogContent, DialogTitle, DialogClose, DialogDescription } from "./components/ui/dialog";
+import {
+  Dialog,
+  DialogFooter,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogClose,
+  DialogDescription,
+} from "./components/ui/dialog";
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+} from "@/components/ui/context-menu";
 
 interface FileBrowserProps {
   libraries: components["schemas"]["LibraryEntity"][];
 }
 
-export function FileDialog({ libraryId, item, children, path }: { path: string, libraryId: number, children: React.ReactNode, item: components["schemas"]["SystemFileFolder"] }) {
+export function FileDialog({
+  libraryId,
+  item,
+  children,
+  path,
+}: {
+  path: string;
+  libraryId: number;
+  children: React.ReactNode;
+  item: components["schemas"]["SystemFileFolder"];
+}) {
   const getDownloadUrl = () => {
     const fullPath = [path, item.name].join("/").replace(/\/+/g, "/");
     const encoded = encodeURIComponent(fullPath);
-    return `${import.meta.env.PROD ? "/" : "/api/"}libraries/${libraryId}/download?path=${encoded}`;
+    return `${import.meta.env.PROD ? "/" : "/api/"
+      }libraries/${libraryId}/download?path=${encoded}`;
   };
 
-  return <>
+  return (
     <Dialog>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
-        <DialogTitle>
-          {item.name}
-        </DialogTitle>
+        <DialogTitle>{item.name}</DialogTitle>
         <DialogDescription>
           {item.size ? `Size: ${(item.size / 1024).toFixed(2)} KB` : "Folder"}
         </DialogDescription>
@@ -50,7 +71,86 @@ export function FileDialog({ libraryId, item, children, path }: { path: string, 
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  </>
+  );
+}
+
+function FileItem({
+  item,
+  path,
+  libraryId,
+  onEnterFolder,
+}: {
+  item: components["schemas"]["SystemFileFolder"];
+  path: string;
+  libraryId: number;
+  onEnterFolder: (folder: string) => void;
+}) {
+  const getDownloadUrl = () => {
+    const fullPath = [path, item.name].join("/").replace(/\/+/g, "/");
+    const encoded = encodeURIComponent(fullPath);
+    return `${import.meta.env.PROD ? "/" : "/api/"
+      }libraries/${libraryId}/download?path=${encoded}`;
+  };
+
+  const content = (
+    <div className="flex items-center gap-2">
+      {item.type === "FOLDER" ? (
+        <Folder className="w-4 h-4 text-blue-500" />
+      ) : (
+        <FileText className="w-4 h-4 text-gray-500" />
+      )}
+      <span>{item.name}</span>
+    </div>
+  );
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <TableRow
+          key={item.path}
+          className="cursor-pointer hover:bg-muted/50"
+          onClick={() => {
+            if (item.type === "FOLDER") onEnterFolder(item.name as string);
+          }}
+        >
+          <TableCell>
+            {item.type === "FILE" ? (
+              <FileDialog
+                path={path}
+                libraryId={libraryId}
+                item={item}
+              >
+                {content}
+              </FileDialog>
+            ) : (
+              content
+            )}
+          </TableCell>
+        </TableRow>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-48">
+        {item.type === "FOLDER" ? (
+          <>
+            <ContextMenuItem onSelect={() => onEnterFolder(item.name as string)}>
+              <ArrowRight /> Open
+            </ContextMenuItem>
+            <ContextMenuItem
+              onSelect={() => window.open(getDownloadUrl(), "_blank")}
+            >
+              <DownloadIcon /> Zipped download
+            </ContextMenuItem>
+
+          </>
+        ) : (
+          <ContextMenuItem
+            onSelect={() => window.open(getDownloadUrl(), "_blank")}
+          >
+            <DownloadIcon /> Download
+          </ContextMenuItem>
+        )}
+      </ContextMenuContent>
+    </ContextMenu>
+  );
 }
 
 export default function FileBrowser({ libraries }: FileBrowserProps) {
@@ -64,7 +164,10 @@ export default function FileBrowser({ libraries }: FileBrowserProps) {
     setPath("/");
   };
 
-  const { data, isLoading, isError } = useLibraryFiles(selectedLibraryId ?? 0, path);
+  const { data, isLoading, isError } = useLibraryFiles(
+    selectedLibraryId ?? 0,
+    path
+  );
 
   const parts = path.split("/").filter(Boolean);
 
@@ -113,45 +216,22 @@ export default function FileBrowser({ libraries }: FileBrowserProps) {
 
       {/* File list */}
       {isLoading && <div className="text-sm">Loading...</div>}
-      {isError && <div className="text-sm text-red-500">Failed to load files.</div>}
+      {isError && (
+        <div className="text-sm text-red-500">Failed to load files.</div>
+      )}
 
       {!isLoading && !isError && (
         <Table>
           <TableBody>
-            {data?.map((item) => {
-
-              const content = (
-                <div className="flex items-center gap-2">
-                  {item.type === "FOLDER" ? (
-                    <Folder className="w-4 h-4 text-blue-500" />
-                  ) : (
-                    <FileText className="w-4 h-4 text-gray-500" />
-                  )}
-                  <span>{item.name}</span>
-                </div>
-              );
-
-              return (
-                <TableRow
-                  key={item.path}
-                  className="cursor-pointer hover:bg-muted/50"
-                >
-                  <TableCell
-                    onClick={() => {
-                      if (item.type === "FOLDER") enterFolder(item.name as string);
-                    }}
-                  >
-                    {item.type === "FILE" ? (
-                      <FileDialog path={path} libraryId={selectedLibraryId as number} item={item}>
-                        {content}
-                      </FileDialog>
-                    ) : (
-                      content
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {data?.map((item) => (
+              <FileItem
+                key={item.path}
+                item={item}
+                path={path}
+                libraryId={selectedLibraryId as number}
+                onEnterFolder={enterFolder}
+              />
+            ))}
           </TableBody>
         </Table>
       )}

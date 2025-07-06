@@ -1,5 +1,6 @@
 package com.serba.streams;
 
+import com.serba.service.FileCompletionHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.BiConsumer;
@@ -7,8 +8,7 @@ import java.util.function.BiConsumer;
 public class ProgressInputStream extends InputStream {
   private final InputStream delegate;
   private final BiConsumer<Long, Long> onProgress;
-  private final Runnable onComplete;
-  private final Runnable onCloseEarly;
+  private final FileCompletionHandler handler;
 
   private long bytesRead = 0;
   private final long totalSize;
@@ -19,13 +19,11 @@ public class ProgressInputStream extends InputStream {
       InputStream delegate,
       long totalSize,
       BiConsumer<Long, Long> onProgress,
-      Runnable onComplete,
-      Runnable onCloseEarly) {
+      FileCompletionHandler handler) {
     this.delegate = delegate;
     this.totalSize = totalSize;
     this.onProgress = onProgress;
-    this.onComplete = onComplete;
-    this.onCloseEarly = onCloseEarly;
+    this.handler = handler;
   }
 
   @Override
@@ -53,7 +51,7 @@ public class ProgressInputStream extends InputStream {
   private void checkCompletion() {
     if (!completed && bytesRead >= totalSize) {
       completed = true;
-      onComplete.run();
+      handler.run();
     }
   }
 
@@ -63,7 +61,8 @@ public class ProgressInputStream extends InputStream {
       closed = true;
       delegate.close();
       if (!completed) {
-        onCloseEarly.run();
+        handler.setSuccessful(false);
+        handler.run();
       }
     }
   }
