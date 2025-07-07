@@ -40,16 +40,20 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Step 4: Push the image to GitHub Container Registry
-REM echo Pushing Docker image to ghcr.io...
-REM docker push ghcr.io/d4rckh/serba:latest
-
-REM if errorlevel 1 (
-REM     echo Docker push failed.
-REM     exit /b 1
-REM )
-
-REM echo Docker image pushed to ghcr.io/d4rckh/serba:latest successfully!
-
-endlocal
+echo PRESS ENTER TO PUSH IMAGE TO GHCR.IO.....
 pause
+
+
+REM Step 4: Push the image to GitHub Container Registry
+echo Pushing Docker image to ghcr.io...
+docker push ghcr.io/d4rckh/serba:latest
+
+if errorlevel 1 (
+     echo Docker push failed.
+    exit /b 1
+)
+
+echo Docker image pushed to ghcr.io/d4rckh/serba:latest successfully!
+
+pause
+endlocal

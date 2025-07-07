@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLibraryFiles } from "./lib/queries";
+import { getZipDownloadUrl, useCreateZipJobMutation, useJobQuery, useLibraryFiles, useZipJobs } from "./lib/queries";
 import type { components } from "./lib/v1";
 import {
   Dialog,
@@ -25,6 +25,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
 } from "@/components/ui/context-menu";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "./components/ui/card";
 
 interface FileBrowserProps {
   libraries: components["schemas"]["LibraryEntity"][];
@@ -85,11 +86,21 @@ function FileItem({
   libraryId: number;
   onEnterFolder: (folder: string) => void;
 }) {
-  const getDownloadUrl = () => {
+  const { mutateAsync: createZip } = useCreateZipJobMutation();
+
+  const handleZipDownload = () => {
+    const fullPath = [path, item.name].join("/").replace(/\/+/g, "/");
+    createZip(
+      {
+        body: { libraryId, libraryPath: fullPath }
+      }
+    )
+  };
+
+  const getDirectDownloadUrl = () => {
     const fullPath = [path, item.name].join("/").replace(/\/+/g, "/");
     const encoded = encodeURIComponent(fullPath);
-    return `${import.meta.env.PROD ? "/" : "/api/"
-      }libraries/${libraryId}/download?path=${encoded}`;
+    return `${import.meta.env.PROD ? "/" : "/api/"}libraries/${libraryId}/download?path=${encoded}`;
   };
 
   const content = (
@@ -115,11 +126,7 @@ function FileItem({
         >
           <TableCell>
             {item.type === "FILE" ? (
-              <FileDialog
-                path={path}
-                libraryId={libraryId}
-                item={item}
-              >
+              <FileDialog path={path} libraryId={libraryId} item={item}>
                 {content}
               </FileDialog>
             ) : (
@@ -128,24 +135,24 @@ function FileItem({
           </TableCell>
         </TableRow>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-48">
+
+      <ContextMenuContent className="w-60">
         {item.type === "FOLDER" ? (
           <>
             <ContextMenuItem onSelect={() => onEnterFolder(item.name as string)}>
-              <ArrowRight /> Open
-            </ContextMenuItem>
-            <ContextMenuItem
-              onSelect={() => window.open(getDownloadUrl(), "_blank")}
-            >
-              <DownloadIcon /> Zipped download
+              <ArrowRight className="mr-2 h-4 w-4" /> Open
             </ContextMenuItem>
 
+            <ContextMenuItem onSelect={handleZipDownload}>
+              <DownloadIcon className="mr-2 h-4 w-4" />
+              Start zip job
+            </ContextMenuItem>
           </>
         ) : (
           <ContextMenuItem
-            onSelect={() => window.open(getDownloadUrl(), "_blank")}
+            onSelect={() => window.open(getDirectDownloadUrl(), "_blank")}
           >
-            <DownloadIcon /> Download
+            <DownloadIcon className="mr-2 h-4 w-4" /> Download
           </ContextMenuItem>
         )}
       </ContextMenuContent>
@@ -158,6 +165,8 @@ export default function FileBrowser({ libraries }: FileBrowserProps) {
     libraries.length > 0 ? libraries[0].id : 0
   );
   const [path, setPath] = useState("/");
+
+  const zipJobs = useZipJobs();
 
   const onSelectLibrary = (id: number) => {
     setSelectedLibraryId(id);
@@ -187,6 +196,27 @@ export default function FileBrowser({ libraries }: FileBrowserProps) {
 
   return (
     <div className="space-y-4">
+      {
+        zipJobs.data && zipJobs.data.map(a => <>
+          <Card>
+            <CardHeader>
+              <CardTitle>{a.attrs?.libraryPath as unknown as string} zip</CardTitle>
+              <CardDescription>Progress: {a.progress}%</CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <a
+                href={`${getZipDownloadUrl(a.id as string)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button disabled={(a.progress ?? 0) < 100}>Download now</Button>
+              </a>
+
+            </CardFooter>
+          </Card>
+        </>)
+      }
+
       {/* Tabs for libraries */}
       <Tabs
         value={String(selectedLibraryId)}

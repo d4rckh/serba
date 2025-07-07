@@ -5,6 +5,7 @@ import com.serba.domain.files.SystemFileFolder;
 import com.serba.entity.LibraryEntity;
 import com.serba.entity.UserEntity;
 import com.serba.security.AuthorizationUtils;
+import com.serba.service.DownloadService;
 import com.serba.service.LibraryService;
 import com.serba.service.UserLibraryAccessService;
 import com.serba.service.UserService;
@@ -33,6 +34,7 @@ public class LibraryController {
   private final LibraryService libraryService;
   private final UserService userService;
   private final UserLibraryAccessService userLibraryAccessService;
+  private final DownloadService downloadService;
 
   @Post
   @Secured("SUPER")
@@ -111,7 +113,7 @@ public class LibraryController {
             .orElseThrow(() -> new IllegalArgumentException("Library not found with id: " + id));
     UserEntity user = userService.findByUsername(authentication.getName());
 
-    FileDownload fileDownload = libraryService.downloadLibraryFile(library, path, user);
+    FileDownload fileDownload = downloadService.downloadLibraryFile(library, path, user);
     InputStream stream = fileDownload.getStream();
     String filename = fileDownload.getFilename();
 

@@ -6,6 +6,8 @@ import com.serba.domain.files.SystemFileFolderType;
 import com.serba.entity.LibraryEntity;
 import com.serba.entity.UserEntity;
 import com.serba.repository.LibraryRepository;
+import com.serba.utils.PathUtils;
+
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,30 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 public class LibraryService {
   private final LibraryRepository libraryRepository;
   private final SystemFilesService systemFilesService;
-  private final DownloadTrackingService downloadTrackingService;
-
-  private Path resolveSafePath(String baseDir, String relativePath) {
-    Path base = Paths.get(baseDir).toAbsolutePath().normalize();
-
-    if (relativePath == null
-        || relativePath.isEmpty()
-        || relativePath.equals("/")
-        || relativePath.equals("\\")) {
-      return base;
-    }
-
-    while (relativePath.startsWith("/") || relativePath.startsWith("\\")) {
-      relativePath = relativePath.substring(1);
-    }
-
-    Path resolved = base.resolve(relativePath).normalize();
-
-    if (!resolved.startsWith(base)) {
-      throw new SecurityException("Path traversal attempt detected: " + relativePath);
-    }
-
-    return resolved;
-  }
 
   public LibraryEntity createLibrary(LibraryEntity libraryEntity) {
     return this.libraryRepository.save(libraryEntity);
@@ -84,7 +62,7 @@ public class LibraryService {
 
   public List<SystemFileFolder> getLibraryFiles(LibraryEntity library, String path)
       throws IOException {
-    Path safePath = resolveSafePath(library.getSystemLocation(), path);
+    Path safePath = PathUtils.resolveSafePath(library.getSystemLocation(), path);
 
     List<SystemFileFolder> contents =
         this.systemFilesService.listFolderContents(safePath.toString());
@@ -94,47 +72,6 @@ public class LibraryService {
             .thenComparing(SystemFileFolder::getName, String.CASE_INSENSITIVE_ORDER));
 
     return contents;
-  }
-
-  private Path createZipFromDirectory(Path directory) throws IOException {
-    Path tempZip = Files.createTempFile("zipped-", ".zip");
-    try (ZipOutputStream zipOut = new ZipOutputStream(Files.newOutputStream(tempZip))) {
-      systemFilesService.zipDirectory(directory, directory.getFileName().toString(), zipOut);
-      zipOut.finish();
-    }
-    return tempZip;
-  }
-
-  public FileDownload downloadLibraryFile(LibraryEntity library, String path, UserEntity user)
-      throws IOException {
-    Path safePath = resolveSafePath(library.getSystemLocation(), path);
-    Path fileToDownload = safePath;
-    boolean isTempZip = false;
-
-    if (Files.isDirectory(safePath)) {
-      fileToDownload = createZipFromDirectory(safePath);
-      isTempZip = true;
-    }
-
-    long totalBytes = Files.size(fileToDownload);
-
-    String downloadUuid =
-        this.downloadTrackingService.startTracking(
-            user, library, path, fileToDownload.toString(), totalBytes);
-
-    FileCompletionHandler fileCompletionHandler =
-        new FileCompletionHandler(this.downloadTrackingService, downloadUuid, isTempZip);
-
-    FileDownload download =
-        systemFilesService.downloadFileStream(
-            fileToDownload.toString(),
-            (read, total) -> this.downloadTrackingService.updateProgress(downloadUuid, read),
-            fileCompletionHandler);
-
-    String filename =
-        isTempZip ? safePath.getFileName().toString() + ".zip" : safePath.getFileName().toString();
-
-    return FileDownload.builder().stream(download.getStream()).filename(filename).build();
   }
 
   public void deleteLibrary(LibraryEntity libraryEntity) {

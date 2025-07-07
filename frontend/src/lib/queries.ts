@@ -203,3 +203,38 @@ export function useUpdateUserLibraryAccessMutation() {
     }
   );
 }
+
+export function useCreateZipJobMutation() {
+  const queryClient = useQueryClient();
+
+  return $api.useMutation('post', '/zip', {
+    onSettled() {
+      queryClient.refetchQueries($api.queryOptions("get", "/zip/job"))
+    }
+  });
+}
+
+export function useJobQuery(jobId: string, enabled = true) {
+  return $api.useQuery('get', '/jobs/{jobId}', {
+    params: { path: { jobId } },
+  }, {
+    enabled: !!jobId && enabled,
+    refetchInterval: (data) =>
+      data?.progress ?? 0 < 100 ? 2000 : false,
+  });
+}
+
+export function useZipJobs() {
+  return $api.useQuery('get', '/zip/job', undefined, {
+    refetchInterval: (data) => {
+      if ((data ?? []).map(a => a.progress ?? 0).filter(a => a && a < 100).length > 0) {
+        return 1000
+      } else return false;
+    },
+  });
+}
+
+export function getZipDownloadUrl(jobId: string) {
+  return `${import.meta.env.PROD ? "/" : "/api/"}zip/job/${jobId}/download`;
+}
+

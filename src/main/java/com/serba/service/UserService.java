@@ -6,7 +6,6 @@ import com.serba.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
 
-import java.lang.foreign.Linker.Option;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,8 +17,20 @@ import org.mindrot.jbcrypt.BCrypt;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
-
   private final UserRepository userRepository;
+
+  @PostConstruct
+  void init() {
+    if (this.findAll().isEmpty()) {
+      UserEntity admin = new UserEntity();
+      admin.setUsername("admin");
+      admin.setSuperUser(true);
+      String password = UUID.randomUUID().toString();
+      admin.setHashedPassword(hashPassword(password));
+      log.info("Creating default admin user with password: {}", password);
+      userRepository.save(admin);
+    }
+  }
 
   private String hashPassword(String password) {
     return BCrypt.hashpw(password, BCrypt.gensalt());
@@ -70,18 +81,5 @@ public class UserService {
     UserEntity user = findByUsername(request.getUsername());
     user.setHashedPassword(hashPassword(request.getPassword()));
     return userRepository.update(user);
-  }
-
-  @PostConstruct
-  void init() {
-    if (this.findAll().isEmpty()) {
-      UserEntity admin = new UserEntity();
-      admin.setUsername("admin");
-      admin.setSuperUser(true);
-      String password = UUID.randomUUID().toString();
-      admin.setHashedPassword(hashPassword(password));
-      log.info("Creating default admin user with password: {}", password);
-      userRepository.save(admin);
-    }
   }
 }
