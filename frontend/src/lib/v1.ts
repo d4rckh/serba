@@ -196,6 +196,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tracking/{downloadUuid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteDownloadTracking"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/user-library-access": {
         parameters: {
             query?: never;
@@ -378,6 +394,7 @@ export interface components {
         UserDownload: {
             /** Format: int64 */
             averageSpeed?: number;
+            uuid: string;
             user: components["schemas"]["UserEntity"];
             library: components["schemas"]["LibraryEntity"];
             path: string;
@@ -744,6 +761,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UserDownload"][];
                 };
+            };
+        };
+    };
+    deleteDownloadTracking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                downloadUuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description deleteDownloadTracking 200 response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

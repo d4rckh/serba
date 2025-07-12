@@ -1,9 +1,12 @@
-import { useDownloadTracking } from "./lib/queries";
+import { useDeleteDownloadTrackingMutation, useDownloadTracking } from "./lib/queries";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "./components/ui/button";
+import { Trash } from "lucide-react";
 
 export default function DownloadsTab() {
   const { data: downloads, isLoading, isError } = useDownloadTracking();
+  const deleteMutation = useDeleteDownloadTrackingMutation();
 
   if (isLoading) return <div className="text-muted-foreground">Loading downloads...</div>;
   if (isError) return <div className="text-destructive">Error loading downloads</div>;
@@ -31,10 +34,22 @@ export default function DownloadsTab() {
               className="border rounded-lg p-4 bg-muted/30 space-y-2"
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                <div>
+                  <Button disabled={(progress ?? 0) < 100} variant={"ghost"} onClick={() => {
+                    deleteMutation.mutate({
+                      params: {
+                        path: { downloadUuid: dl.uuid }
+                      }
+                    })
+                  }}>
+                    <Trash />
+                  </Button>
+                </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">{dl.user.username}</span>
                   <span className="text-sm text-muted-foreground">{dl.library.name}</span>
                 </div>
+                <div className="flex-1"></div>
                 <div className="text-sm text-muted-foreground max-w-[80ch] truncate">
                   {dl.path}
                 </div>

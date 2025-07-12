@@ -14,6 +14,7 @@ import lombok.Data;
 @Serdeable
 @Builder
 public class UserDownload {
+  private String uuid;
   private UserEntity user;
   private LibraryEntity library;
   private String path;

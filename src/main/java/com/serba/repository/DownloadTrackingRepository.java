@@ -22,4 +22,6 @@ public interface DownloadTrackingRepository {
   UserDownload markCompleted(String downloadUuid);
 
   UserDownload markFailed(String downloadUuid);
+
+  void deleteById(String downloadUuid);
 }

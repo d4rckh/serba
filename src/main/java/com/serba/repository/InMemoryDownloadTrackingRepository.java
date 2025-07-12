@@ -18,16 +18,17 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
   public String trackDownload(
       UserEntity user, LibraryEntity library, String path, String realSystemPath, long totalBytes) {
     String uuid = UUID.randomUUID().toString();
-    UserDownload download =
-        UserDownload.builder()
-            .user(user)
-            .library(library)
-            .path(path)
-            .realSystemPath(realSystemPath)
-            .totalBytes(totalBytes)
-            .bytesRead(0)
-            .startedAt(Instant.now())
-            .build();
+    UserDownload download = UserDownload.builder()
+        .user(user)
+        .library(library)
+        .path(path)
+        .realSystemPath(realSystemPath)
+        .totalBytes(totalBytes)
+        .bytesRead(0)
+        .startedAt(Instant.now())
+        .uuid(uuid)
+        .build();
+
     downloads.put(uuid, download);
     return uuid;
   }
@@ -64,7 +65,11 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
 
   @Override
   public List<UserDownload> findAll() {
-    return downloads.values().stream().toList();
+    return downloads
+        .values()
+        .stream()
+        .sorted((a, b) -> b.getStartedAt().compareTo(a.getStartedAt()))
+        .toList();
   }
 
   @Override
@@ -82,5 +87,10 @@ public class InMemoryDownloadTrackingRepository implements DownloadTrackingRepos
   @Override
   public UserDownload findById(String downloadUuid) {
     return downloads.get(downloadUuid);
+  }
+
+  @Override
+  public void deleteById(String downloadUuid) {
+    downloads.remove(downloadUuid);
   }
 }

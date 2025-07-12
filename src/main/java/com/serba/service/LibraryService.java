@@ -1,22 +1,17 @@
 package com.serba.service;
 
-import com.serba.domain.downloads.FileDownload;
 import com.serba.domain.files.SystemFileFolder;
 import com.serba.domain.files.SystemFileFolderType;
 import com.serba.entity.LibraryEntity;
-import com.serba.entity.UserEntity;
 import com.serba.repository.LibraryRepository;
 import com.serba.utils.PathUtils;
 
 import jakarta.inject.Singleton;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

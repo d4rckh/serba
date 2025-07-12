@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getZipDownloadUrl, useCreateZipJobMutation, useJobQuery, useLibraryFiles, useZipJobs } from "./lib/queries";
+import { getZipDownloadUrl, useCreateZipJobMutation, useLibraryFiles, useZipJobs } from "./lib/queries";
 import type { components } from "./lib/v1";
 import {
   Dialog,
@@ -124,15 +124,17 @@ function FileItem({
             if (item.type === "FOLDER") onEnterFolder(item.name as string);
           }}
         >
-          <TableCell>
-            {item.type === "FILE" ? (
-              <FileDialog path={path} libraryId={libraryId} item={item}>
+          {item.type === "FILE" ? (
+            <FileDialog path={path} libraryId={libraryId} item={item}>
+              <TableCell>
                 {content}
-              </FileDialog>
-            ) : (
-              content
-            )}
-          </TableCell>
+              </TableCell>
+            </FileDialog>
+          ) : (
+            <TableCell>
+              {content}
+            </TableCell>
+          )}
         </TableRow>
       </ContextMenuTrigger>
 
@@ -234,15 +236,37 @@ export default function FileBrowser({ libraries }: FileBrowserProps) {
       {/* Path navigation */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
-          Path: <span className="font-medium text-foreground">{path}</span>
+          Path:{" "}
+          <span className="font-medium text-foreground">
+            {path
+              .split("/")
+              .filter(Boolean)
+              .reduce((acc, segment) => {
+                const prevPath = acc.length > 0 ? acc[acc.length - 1][0] : "";
+                const newPath = `${prevPath}/${segment}`;
+                acc.push([newPath, segment] as [string, string]);
+                return acc;
+              }, [] as [string, string][])
+              .map(([fullPath, name]) => (
+                <Button
+                  key={fullPath}
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setPath(fullPath)}
+                >
+                  <Folder /> {name}
+                </Button>
+              ))}
+          </span>
         </div>
         {path !== "/" && (
-          <Button size="sm" variant="outline" onClick={goBack}>
+          <Button size="sm" onClick={goBack}>
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back
           </Button>
         )}
       </div>
+
 
       {/* File list */}
       {isLoading && <div className="text-sm">Loading...</div>}

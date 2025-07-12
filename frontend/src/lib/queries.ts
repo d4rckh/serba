@@ -113,6 +113,16 @@ export function useUserDownloadTracking(userId: number) {
   );
 }
 
+export function useDeleteDownloadTrackingMutation() {
+  const queryClient = useQueryClient();
+
+  return $api.useMutation("delete", "/tracking/{downloadUuid}", {
+    onSettled() {
+      queryClient.refetchQueries($api.queryOptions("get", "/tracking"))
+    }
+  })
+}
+
 export function useLibraryDownloadTracking(libraryId: number) {
   const user = useUserQuery();
   return $api.useQuery(
@@ -228,7 +238,7 @@ export function useZipJobs() {
   return $api.useQuery('get', '/zip/job', undefined, {
     refetchInterval: (data) => {
       if ((data ?? []).map(a => a.progress ?? 0).filter(a => a && a < 100).length > 0) {
-        return 1000
+        return 500
       } else return false;
     },
   });

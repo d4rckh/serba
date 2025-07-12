@@ -68,4 +68,8 @@ public class DownloadTrackingService {
   public List<UserDownload> findByLibraryId(Long id) {
     return downloadTrackingRepository.findByLibraryId(id);
   }
+
+  public void delete(String downloadUuid) {
+    downloadTrackingRepository.deleteById(downloadUuid);
+  }
 }
